@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const http = require('http');
 const express = require('express');
 const app = express();
 const cors = require('cors');
@@ -63,7 +64,7 @@ mongoose.connect(process.env.MONGODB_URI, {
   console.error('Error connecting to MongoDB:', err);
 });
 
-app.listen(PORT, () => {
+http.createServer(app).listen(PORT, () => {
   console.log("Listening on port " + PORT);
 })
 
