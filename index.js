@@ -5,6 +5,7 @@ const cors = require('cors');
 const dotenv = require('dotenv');
 dotenv.config();
 const shortenUrlDB = require('./models/urls');
+const PORT = process.env.PORT || 5000;
 
 app.use(cors());
 app.use(express.json());
@@ -62,7 +63,7 @@ mongoose.connect(process.env.MONGODB_URI, {
   console.error('Error connecting to MongoDB:', err);
 });
 
-app.listen(5000, () => {
-  console.log("Listening on port 3000");
+app.listen(PORT, () => {
+  console.log("Listening on port " + PORT);
 })
 
