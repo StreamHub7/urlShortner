@@ -1,7 +1,10 @@
-const fs = require('fs');
+const mongoose = require('mongoose');
 const express = require('express');
 const app = express();
 const cors = require('cors');
+const dotenv = require('dotenv');
+dotenv.config();
+const shortenUrlDB = require('./models/urls');
 
 app.use(cors());
 app.use(express.json());
@@ -14,9 +17,12 @@ app.post('/api/shortenUrl', (req, res) => {
     console.log(host);
     try{
         const key = generateKey();
-        const data = JSON.parse(fs.readFileSync('data.json')) || {};
-        data[key] = url;
-        fs.writeFileSync('data.json', JSON.stringify(data));
+        const urlData = new shortenUrlDB({
+            key: key,
+            url: url
+        });
+
+        urlData.save();
         res.status(200).json({shortenUrl: host + '/' + key});
     }
     catch(err){
@@ -24,12 +30,11 @@ app.post('/api/shortenUrl', (req, res) => {
     }
 })
 
-app.get('/:key', (req, res) => {
+app.get('/:key', async (req, res) => {
     const { key } = req.params;
     try{
-        const data = JSON.parse(fs.readFileSync('data.json'));
-        if(data[key] === undefined) return null;
-        else res.redirect(data[key]);
+        const data = await shortenUrlDB.findOne({key});
+        res.redirect(data.url);
     }
     catch(err){
         res.status(500).json({err});
@@ -47,6 +52,15 @@ function generateKey() {
     
     return randomKey;
   }
+
+mongoose.connect(process.env.MONGODB_URI, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true
+}).then(() => {
+  console.log('Connected to MongoDB');
+}).catch((err) => {
+  console.error('Error connecting to MongoDB:', err);
+});
 
 app.listen(5000, () => {
   console.log("Listening on port 3000");
